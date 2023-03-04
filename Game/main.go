@@ -20,6 +20,6 @@ func main() {
 	InitMaps()
 	mps.Init()
 	DB.Init()
-	CCtcpManager.Init()
-	CCtcpManager.startListen()
+	LocalMapInfos.InitServerMa(getNewUT, 7999)
+	LocalMapInfos.StartTCPListen()
 }

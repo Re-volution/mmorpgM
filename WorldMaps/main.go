@@ -22,4 +22,8 @@ func main() {
 	fmt.Println("世界地图", id)
 	LocalMapInfos.InitMapsInfo(200)
 	InitMaps()
+	WManager.InitWorldManager()
+	HandMsg()
+	LocalMapInfos.InitServerMa(getNewUT, 6999)
+	LocalMapInfos.StartTCPListen()
 }

@@ -1,15 +1,18 @@
-package main
+package LocalMapInfos
 
 import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"strconv"
 	"sync"
 )
 
 type tcpManager struct {
-	sync.RWMutex
-	TcpConns map[uint32]*userConn
+	sync.RWMutex                                //读写锁
+	TcpConns     map[uint32]*userConn           //链接池
+	getHandle    func(conn net.Conn) HandleMsgI //处理消息函数
+	Port         int                            //端口
 }
 
 type userConn struct {
@@ -17,11 +20,18 @@ type userConn struct {
 	n  net.Conn
 }
 
+type HandleMsgI interface {
+	HandMsg(uint16, []byte)
+	Exit()
+}
+
 var CCtcpManager = new(tcpManager)
 
-func (tm *tcpManager) Init() {
-	tm.TcpConns = make(map[uint32]*userConn)
-	fmt.Println("链接管理器完成.......")
+func InitServerMa(f func(conn net.Conn) HandleMsgI, p int) {
+	CCtcpManager.TcpConns = make(map[uint32]*userConn)
+	CCtcpManager.getHandle = f
+	CCtcpManager.Port = p
+	fmt.Println("tcp链接管理器完成.......")
 }
 
 func (tm *tcpManager) addTcp(c net.Conn) *userConn {
@@ -47,8 +57,8 @@ func (tm *tcpManager) delTcp(id uint32) {
 	tm.Unlock()
 }
 
-func (*tcpManager) startListen() {
-	addr, e := net.ResolveTCPAddr("tcp", ":7999")
+func StartTCPListen() {
+	addr, e := net.ResolveTCPAddr("tcp", ":"+strconv.Itoa(CCtcpManager.Port))
 	if e != nil {
 		return
 	}
@@ -59,14 +69,12 @@ func (*tcpManager) startListen() {
 	}
 	c, e := l.Accept()
 
-	var nuser = new(userTcp)
-	nuser.c = c
-	nuser.ex = make(chan bool, 2)
 	u := CCtcpManager.addTcp(c)
+	nuser := CCtcpManager.getHandle(c)
 	go u.Read(nuser)
 }
 
-func (u *userConn) Read(ut *userTcp) {
+func (u *userConn) Read(ut HandleMsgI) {
 	var b = make([]byte, 512)
 	var data = make([]byte, 0, 512)
 	var length = uint32(0)
@@ -76,22 +84,20 @@ func (u *userConn) Read(ut *userTcp) {
 		if e != nil {
 			fmt.Println("read err:", e)
 			CCtcpManager.delTcp(u.id)
-			ut.ex <- true
+			ut.Exit()
 			return
 		}
 		data = append(data, b[:l]...)
 		for {
-			if len(data) >= int(length) && length >= 6 {
+			if length > 0 && len(data) >= int(length) && len(data) >= 6 { //前四位是长度，后两位是协议号
 				protocolID = binary.BigEndian.Uint16(data[4:6])
-				ut.handMsg(protocolID, data[6:length])
+				ut.HandMsg(protocolID, data[6:length])
 				length = 0
 				data = data[length:]
 			}
-
-			if length == 0 && len(data) >= 6 { //长度 取协议号
+			if length == 0 && len(data) >= 4 { //长度
 				length = binary.BigEndian.Uint32(data[:4])
 			}
-
 			if int(length) > len(data) || length == 0 {
 				break
 			}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"mmorpg/LocalMapInfos"
 	"net"
 )
 
@@ -20,7 +21,16 @@ type userMsg struct {
 	msg        []byte
 }
 
-func (ut *userTcp) handMsg(protocolID uint16, msg []byte) {
+func (ut *userTcp) Exit() {
+	ut.ex <- true
+}
+func getNewUT(c net.Conn) LocalMapInfos.HandleMsgI {
+	var nuser = new(userTcp)
+	nuser.c = c
+	nuser.ex = make(chan bool, 2)
+	return nuser
+}
+func (ut *userTcp) HandMsg(protocolID uint16, msg []byte) {
 	switch protocolID {
 	case LoginMsgID:
 		if ut.u != nil {

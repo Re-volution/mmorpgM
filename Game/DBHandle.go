@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"mmorpg/LocalMapInfos"
+)
 
 type DBManager struct {
 	LoginChan chan chanUid
@@ -11,6 +14,7 @@ var DB = new(DBManager)
 func (D *DBManager) Init() {
 	D.LoginChan = make(chan chanUid, 512)
 	go func() {
+		defer LocalMapInfos.RecoErr()
 		for {
 			select {
 			case wd := <-D.LoginChan: //TODO:此处目前是单线处理数据库读取，可改为并发执行

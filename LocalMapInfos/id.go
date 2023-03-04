@@ -1,4 +1,4 @@
-package main
+package LocalMapInfos
 
 import "sync/atomic"
 

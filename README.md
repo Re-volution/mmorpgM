@@ -1,5 +1,5 @@
 # mmorpgM
-一个mmorpg，世界无缝大地图的框架
+一个mmorpg，世界无缝大地图的框架demo
 
 Game为玩家登录服务器，可分布式开启
 LocalMapInfos为提取的公共包

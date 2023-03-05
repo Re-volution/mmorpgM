@@ -7,7 +7,7 @@ import (
 
 type worldMapManager struct {
 	ws   []*WorldConns
-	anti int // 玩家视野不宜超过地图大小太多，否则会造成大量消息传输  //目前不采用九宫格，而是实时以自己为中心200坐标以内的方形区域做视野裁剪
+	anti int // 玩家视野不宜超过地图大小太多，否则会造成大量消息传输  //这里不采用九宫格，而是实时以自己为中心200坐标以内的方形区域做视野裁剪，方便查询是否存在其他大地图视野
 }
 
 var wmm *worldMapManager

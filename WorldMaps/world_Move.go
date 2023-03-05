@@ -13,6 +13,7 @@ type MoveInfo struct {
 	Speed int //速度
 	X     int
 	Y     int
+	Z     int
 }
 
 func (t *wMoveManger) Run() {

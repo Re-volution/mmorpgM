@@ -11,6 +11,8 @@ type player struct {
 	uid string //玩家唯一id
 	x   int
 	y   int
+	z   int
+	xy  int //所在格子
 }
 
 // 初始化玩家管理器

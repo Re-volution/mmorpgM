@@ -5,6 +5,7 @@ import (
 	"mmorpg/LocalMapInfos"
 )
 
+// TODO:大地图的连接以及读取消息没写
 func InitMaps() {
 	var m = new(LocalMapInfos.WorldConns)
 	m.ID = 1
